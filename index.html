@@ -1,14 +1,156 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="./assets/fonts/fonts.css" />
-    <link  rel="stylesheet" href="./src/output.css"></link>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="./assets/fonts/fonts.css" />
+    <link rel="stylesheet" href="./src/output.css" />
+
     <title>لیست کار روزانه</title>
-</head>
-<body>
-    
-</body>
+  </head>
+
+  <body class="bg-white">
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <!-- User Profile -->
+        <div class="profile">
+          <img src="./assets/img/profile.webp" alt="تصویر پروفایل" />
+
+          <div class="profile-info">
+            <h2>سلام، الهام</h2>
+            <p id="current-date"></p>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+          <a href="#">
+            <img src="./assets/icons/light/home-2.svg" alt="" />
+            <span>خانه</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/task-square.svg" alt="" />
+            <span>تسک‌ها</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/calendar.svg" alt="" />
+            <span>تقویم</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/arrange-square-2.svg" alt="" />
+            <span>گزارشات</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/calendar.svg" alt="" />
+            <span>تنظیمات</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/24-support.svg" alt="" />
+            <span>پشتیبانی</span>
+          </a>
+
+          <a href="#">
+            <img src="./assets/icons/light/profile.svg" alt="" />
+            <span>پروفایل</span>
+          </a>
+        </nav>
+
+        <!-- Bottom Controls -->
+        <div class="sidebar-bottom">
+          <!-- Theme Switcher -->
+          <div class="theme-switcher">
+            <button type="button">
+              <img src="./assets/icons/light/moon.svg" alt="" />
+              <span>تاریک</span>
+            </button>
+
+            <button type="button" class="active">
+              <img src="./assets/icons/light/sun.svg" alt="" />
+              <span>روشن</span>
+            </button>
+          </div>
+
+          <!-- Logout -->
+          <button type="button" class="logout">
+            <img src="./assets/icons/light/logout.svg" alt="" />
+            <span>خروج</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Header -->
+        <header>
+          <h1>تسک‌های امروز</h1>
+          <p>۳ تسک را باید انجام دهید.</p>
+        </header>
+
+        <!-- Add Task -->
+        <button class="header-but">
+          <span>+</span>
+          <span>افزودن وظیفه جدید</span>
+        </button>
+
+        <!-- Empty State -->
+        <section>
+          <img src="./assets/img/logo.png" alt="تصویر خالی بودن لیست تسک‌ها" />
+
+          <h2>چه کارهایی امروز برای انجام داری؟</h2>
+
+          <p>می‌تونی الان تسک‌هات رو بنویسی و برنامه‌ریزی رو شروع کنی!</p>
+        </section>
+
+        <!-- Completed Tasks -->
+        <section class="completed-tasks">
+          <div class="completed-tasks-header">
+            <h2>تسک‌های انجام شده</h2>
+            <p>۳ تسک انجام شده است.</p>
+          </div>
+
+          <ul class="completed-tasks-list">
+            <!-- Task 1 -->
+            <li class="task-item">
+              <button type="button" aria-label="گزینه‌های بیشتر">
+                <img src="./assets/icons/light/Frame 33317.svg" alt="" />
+              </button>
+
+              <span> خرید میوه و سبزیجات و لبنیات برای خانه </span>
+
+              <input type="checkbox" checked aria-label="تسک انجام شده" />
+            </li>
+
+            <!-- Task 2 -->
+            <li class="task-item">
+              <button type="button" aria-label="گزینه‌های بیشتر">
+                <img src="./assets/icons/light/Frame 33317.svg" alt="" />
+              </button>
+
+              <span> تماس با محل فروشی در مورد تاخیر در ارسال </span>
+
+              <input type="checkbox" checked aria-label="تسک انجام شده" />
+            </li>
+
+            <!-- Task 3 -->
+            <li class="task-item">
+              <button type="button" aria-label="گزینه‌های بیشتر">
+                <img src="./assets/icons/light/Frame 33317.svg" alt="" />
+              </button>
+
+              <span> جلسه با مرتضی در مورد مصاحبه با کارآموز جدید </span>
+
+              <input type="checkbox" checked aria-label="تسک انجام شده" />
+            </li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
 </html>
