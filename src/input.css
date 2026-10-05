@@ -1,10 +1,5 @@
 @import "tailwindcss";
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-/* Tailwind CLI does not infer template locations reliably from this nested
-   source file, so keep the HTML and JavaScript sources explicit. */
-@source "../index.html";
-@source "./js/**/*.js";
+@custom-variant dark   (&:where(.dark, .dark *));
 
 :root {
     --page: #FFFFFF;
@@ -12,7 +7,7 @@
     --content: #191C1E;
     --muted: #646466;
     --border: #E1E0E5;
-    --primary: #3A86F8;
+    -primary: #3A86F8;
     --primary-hover: #075CD9;
     --on-primary: #FFFFFF;
 
@@ -20,7 +15,7 @@
 
 }
 
-[data-theme="dark"] {
+.dark {
   --page:#040810;
   --surface:#323233;
   --content: #E6E9EF;
