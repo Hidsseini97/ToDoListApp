@@ -7,33 +7,32 @@
 @source "./js/**/*.js";
 
 :root {
-    --page: #FFFFFF;
-    --surface: #FFFFFF;
-    --content: #191C1E;
-    --muted: #646466;
-    --border: #E1E0E5;
-    --primary: #3A86F8;
-    --primary-hover: #075CD9;
-    --on-primary: #FFFFFF;
+  --page: #ffffff;
+  --surface: #ffffff;
+  --content: #191c1e;
+  --muted: #646466;
+  --border: #e1e0e5;
+  --primary: #3a86f8;
+  --primary-hover: #075cd9;
+  --on-primary: #ffffff;
 
-      --font: "Vazirmatn", "Tahoma", sans-serif;
-
+  --font: "Vazirmatn", "Tahoma", sans-serif;
 }
 
 [data-theme="dark"] {
-  --page:#040810;
-  --surface:#323233;
-  --content: #E6E9EF;
-  --muted: #C8C7CB;
+  --page: #040810;
+  --surface: #323233;
+  --content: #e6e9ef;
+  --muted: #c8c7cb;
   --border: #646466;
-  --primary: #3A86F8;
-  --primary-hover: #6BA4FA;
-  --on-primary: #FFFFFF;
+  --primary: #3a86f8;
+  --primary-hover: #6ba4fa;
+  --on-primary: #ffffff;
 }
 
 @theme {
-  --color-error: #E63946;
-  --color-success: #90F677;
+  --color-error: #e63946;
+  --color-success: #90f677;
 }
 
 @theme inline {
@@ -45,4 +44,28 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
+}
+
+/* Tailwind v4 removed the pointer cursor from buttons, so restore it once here
+   instead of repeating cursor-pointer on every button / checkbox. */
+@layer base {
+  button:not(:disabled),
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+}
+
+/* Smooth move of a task card between the active and completed lists.
+   Names are only attached to the cards while the transition runs (see main.js). */
+::view-transition-group(*) {
+  animation-duration: 350ms;
+  animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
