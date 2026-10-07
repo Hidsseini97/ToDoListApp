@@ -33,18 +33,14 @@ function loadTasks() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (Array.isArray(saved)) return saved;
-  } catch {
-    // Corrupted JSON: fall back to the demo data.
-  }
+  } catch {}
   return [...initialCompleted];
 }
 
 function saveTasks() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tasks));
-  } catch {
-    // Storage full or blocked: the app still works, just without persistence.
-  }
+  } catch {}
 }
 
 const state = {
@@ -243,6 +239,53 @@ function updateSubmitState() {
 }
 elements.form.addEventListener("input", updateSubmitState);
 
+let formShown = false;
+
+// Animate the form open/closed. `hidden` is only set once the close finishes.
+function animateForm(show, onDone) {
+  const form = elements.form;
+  if (show === formShown) return onDone?.();
+  formShown = show;
+
+  form.getAnimations().forEach((a) => a.cancel());
+
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    form.hidden = !show;
+    return onDone?.();
+  }
+
+  form.hidden = false; // must be rendered to measure its natural size
+  const s = getComputedStyle(form);
+  const full = {
+    height: s.height,
+    opacity: 1,
+    marginTop: s.marginTop,
+    paddingTop: s.paddingTop,
+    paddingBottom: s.paddingBottom,
+    borderTopWidth: s.borderTopWidth,
+    borderBottomWidth: s.borderBottomWidth,
+  };
+  const none = {
+    height: "0px",
+    opacity: 0,
+    marginTop: "0px",
+    paddingTop: "0px",
+    paddingBottom: "0px",
+    borderTopWidth: "0px",
+    borderBottomWidth: "0px",
+  };
+
+  const anim = form.animate(show ? [none, full] : [full, none], {
+    duration: 300,
+    easing: "ease",
+    fill: "forwards",
+  });
+  anim.onfinish = () => {
+    form.hidden = !show;
+    anim.cancel();
+    onDone?.();
+  };
+}
 // Add and Edit Form
 function openForm(task = null) {
   state.editingId = task?.id ?? null;
@@ -254,7 +297,10 @@ function openForm(task = null) {
   updateSubmitState();
   elements.submit.textContent = task ? "ویرایش تسک" : "اضافه کردن تسک";
   elements.form.scrollIntoView({ behavior: "smooth", block: "center" });
-  elements.title.focus();
+  elements.title.focus({ preventScroll: true });
+  animateForm(true, () =>
+    elements.form.scrollIntoView({ behavior: "smooth", block: "center" }),
+  );
 }
 
 function closeForm() {
