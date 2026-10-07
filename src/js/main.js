@@ -25,8 +25,30 @@ const initialCompleted = [
   },
 ];
 
+// Saved tasks win over the demo data. An empty saved list ([]) is respected,
+// so deleting everything does not bring the demo tasks back.
+const STORAGE_KEY = "todo-tasks";
+
+function loadTasks() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (Array.isArray(saved)) return saved;
+  } catch {
+    // Corrupted JSON: fall back to the demo data.
+  }
+  return [...initialCompleted];
+}
+
+function saveTasks() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tasks));
+  } catch {
+    // Storage full or blocked: the app still works, just without persistence.
+  }
+}
+
 const state = {
-  tasks: [...initialCompleted],
+  tasks: loadTasks(),
   editingId: null,
   openMenuId: null,
 };
@@ -34,6 +56,9 @@ const elements = {
   form: document.querySelector("#task-form"),
   title: document.querySelector("#task-title"),
   description: document.querySelector("#task-description"),
+  priority: document.querySelector("#task-priority"),
+  priorityTrigger: document.querySelector("#priority-trigger"),
+  priorityMenu: document.querySelector("#priority-menu"),
   submit: document.querySelector("#submit-task"),
   activeList: document.querySelector("#active-list"),
   completedList: document.querySelector("#completed-list"),
@@ -96,9 +121,10 @@ function taskCard(task) {
     '" class="' +
     baseTaskCard +
     '">' +
+    '<span class="pointer-events-none absolute inset-0 overflow-hidden rounded-[14px]">' +
     '<span class="absolute inset-y-0 right-0 w-[5px] ' +
     styles.stripe +
-    '"></span>' +
+    '"></span></span>' +
     '<div class="relative flex w-5 shrink-0 self-stretch items-center max-[900px]:w-[17px]">' +
     '<button data-menu-trigger class="' +
     menuButton +
@@ -158,16 +184,74 @@ function render() {
     numberFa(completed.length) + " تسک انجام شده است.";
 }
 
+// Tag picker: one button that opens a row with the three tags
+const priorities = ["پایین", "متوسط", "بالا"];
+const priorityBadgeBase =
+  "block rounded-md px-[11px] py-1 text-[13px] font-bold";
+
+elements.priorityMenu.innerHTML = priorities
+  .map(
+    (name) =>
+      '<button type="button" role="option" data-priority="' +
+      name +
+      '" class="border-0 hover:brightness-95 ' +
+      priorityBadgeBase +
+      " " +
+      priorityStyles[name].badge +
+      '">' +
+      name +
+      "</button>",
+  )
+  .join("");
+
+function setPriority(value) {
+  elements.priority.value = value;
+  // Mark the selected tag inside the open row.
+  elements.priorityMenu
+    .querySelectorAll("[data-priority]")
+    .forEach((option) => {
+      const selected = option.dataset.priority === value;
+      option.setAttribute("aria-selected", String(selected));
+      option.classList.toggle("ring-2", selected);
+      option.classList.toggle("ring-current", selected);
+    });
+}
+
+function setPriorityMenu(open) {
+  elements.priorityMenu.dataset.open = String(open);
+  elements.priorityTrigger.setAttribute("aria-expanded", String(open));
+}
+
+elements.priorityTrigger.addEventListener("click", () =>
+  setPriorityMenu(elements.priorityMenu.dataset.open !== "true"),
+);
+elements.priorityMenu.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-priority]");
+  if (!option) return;
+  setPriority(option.dataset.priority);
+  setPriorityMenu(false);
+  elements.priorityTrigger.focus();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setPriorityMenu(false);
+});
+
+// Submit stays disabled until every text field has real content (add + edit).
+function updateSubmitState() {
+  elements.submit.disabled =
+    !elements.title.value.trim() || !elements.description.value.trim();
+}
+elements.form.addEventListener("input", updateSubmitState);
+
 // Add and Edit Form
 function openForm(task = null) {
   state.editingId = task?.id ?? null;
   elements.form.hidden = false;
   elements.title.value = task?.title ?? "";
   elements.description.value = task?.description ?? "";
-  const selected = task?.priority ?? "متوسط";
-  document.querySelectorAll('input[name="priority"]').forEach((input) => {
-    input.checked = input.value === selected;
-  });
+  setPriority(task?.priority ?? "متوسط");
+  setPriorityMenu(false);
+  updateSubmitState();
   elements.submit.textContent = task ? "ویرایش تسک" : "اضافه کردن تسک";
   elements.form.scrollIntoView({ behavior: "smooth", block: "center" });
   elements.title.focus();
@@ -177,6 +261,9 @@ function closeForm() {
   state.editingId = null;
   elements.form.hidden = true;
   elements.form.reset();
+  setPriority("متوسط");
+  setPriorityMenu(false);
+  updateSubmitState();
   elements.submit.textContent = "اضافه کردن تسک";
 }
 
@@ -188,11 +275,9 @@ document.querySelector("#cancel-task").addEventListener("click", closeForm);
 elements.form.addEventListener("submit", (event) => {
   event.preventDefault();
   const title = elements.title.value.trim();
-  if (!title) return;
   const description = elements.description.value.trim();
-  const priority = document.querySelector(
-    'input[name="priority"]:checked',
-  ).value;
+  if (!title || !description) return;
+  const priority = elements.priority.value;
 
   if (state.editingId) {
     const task = state.tasks.find((item) => item.id === state.editingId);
@@ -207,16 +292,20 @@ elements.form.addEventListener("submit", (event) => {
     });
   }
 
+  saveTasks();
   closeForm();
   render();
 });
 
 // Event delegation for cards that are re-rendered in each render.
 document.addEventListener("click", (event) => {
+  if (!event.target.closest("#priority-picker")) setPriorityMenu(false);
+
   const card = event.target.closest("[data-task-card]");
 
   if (!card) {
-    if (!event.target.closest("[data-action]")) {
+    // Only re-render when a card menu is actually open.
+    if (state.openMenuId !== null) {
       state.openMenuId = null;
       render();
     }
@@ -234,6 +323,7 @@ document.addEventListener("click", (event) => {
   if (action === "delete") {
     state.tasks = state.tasks.filter((task) => task.id !== id);
     state.openMenuId = null;
+    saveTasks();
     render();
   } else if (action === "edit") {
     const task = state.tasks.find((item) => item.id === id);
@@ -243,12 +333,40 @@ document.addEventListener("click", (event) => {
   }
 });
 
+// Animates cards moving between lists using the View Transitions API.
+// Cards get a unique view-transition-name only while the transition runs, so
+// the browser can match each old card with its new position.
+function nameCards() {
+  document.querySelectorAll("[data-task-card]").forEach((card) => {
+    card.style.viewTransitionName = "task-" + card.dataset.id;
+  });
+}
+
+function renderWithTransition() {
+  if (!document.startViewTransition) {
+    render();
+    return;
+  }
+  nameCards();
+  const transition = document.startViewTransition(() => {
+    render();
+    nameCards();
+  });
+  transition.finished.finally(() => {
+    document.querySelectorAll("[data-task-card]").forEach((card) => {
+      card.style.viewTransitionName = "";
+    });
+  });
+}
+
 document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-task-toggle]")) return;
   const card = event.target.closest("[data-task-card]");
   const task = state.tasks.find((item) => item.id === Number(card.dataset.id));
-  if (task) task.completed = event.target.checked;
-  render();
+  if (!task) return;
+  task.completed = event.target.checked;
+  saveTasks();
+  renderWithTransition();
 });
 
 // Dark and light mode
@@ -290,4 +408,6 @@ document
   .querySelectorAll("aside a")
   .forEach((link) => link.addEventListener("click", () => setSidebar(false)));
 
+setPriority("متوسط");
+updateSubmitState();
 render();
